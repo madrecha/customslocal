@@ -36,9 +36,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+interface HealthStatus {
+  status: string
+  timestamp: string
+}
+
+interface User {
+  id: number
+  name: string
+  email: string
+}
+
 const loading = ref(false)
-const healthStatus = ref(null)
-const users = ref([])
+const healthStatus = ref<HealthStatus | null>(null)
+const users = ref<User[]>([])
 const error = ref('')
 
 const API_BASE = 'http://localhost:3000'
@@ -52,7 +63,7 @@ const checkHealth = async () => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
     healthStatus.value = await response.json()
   } catch (err) {
-    error.value = `Failed to connect to backend: ${err.message}`
+    error.value = `Failed to connect to backend: ${err instanceof Error ? err.message : 'Unknown error'}`
   } finally {
     loading.value = false
   }
@@ -67,7 +78,7 @@ const fetchUsers = async () => {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
     users.value = await response.json()
   } catch (err) {
-    error.value = `Failed to fetch users: ${err.message}`
+    error.value = `Failed to fetch users: ${err instanceof Error ? err.message : 'Unknown error'}`
   } finally {
     loading.value = false
   }
