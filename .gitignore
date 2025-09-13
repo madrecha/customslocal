@@ -75,3 +75,8 @@ deploy/blocked_ips.txt
 deploy/blockedtds_ips.txt
 deploy/runningtds_ips.txt
 deploy/eydeploy.sh
+
+# Executable files
+testexe-final-linux
+testexe-final-macos
+testexe-final-windows.exe
