@@ -75,6 +75,93 @@ The frontend will start on `http://localhost:5173`
 3. Open `http://localhost:5173` in your browser
 4. Use the "Backend Connection Test" section to verify the connection
 
+## Creating Executables
+
+This project can be built into standalone executables for all major platforms (macOS, Linux, Windows). The executables are completely self-contained and can run from anywhere without requiring Node.js, Bun, or any other dependencies.
+
+### Prerequisites
+
+- [Bun](https://bun.sh) installed on your system
+- Git (to clone the repository)
+
+### Build Process
+
+1. **Clone and setup the project:**
+   ```bash
+   git clone <repository-url>
+   cd testexe
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   # Install root dependencies
+   bun install
+   
+   # Install frontend dependencies
+   cd frontend
+   bun install
+   cd ..
+   
+   # Install backend dependencies
+   cd backend
+   bun install
+   cd ..
+   ```
+
+3. **Build the executables:**
+   ```bash
+   # Make the build script executable (if needed)
+   chmod +x build.sh
+   
+   # Run the build script
+   ./build.sh
+   ```
+
+### What the Build Process Does
+
+The build script (`build.sh`) performs the following steps:
+
+1. **Frontend Build**: Compiles the Vue.js frontend into optimized static files
+2. **Backend Compilation**: Uses Bun's native compilation to create standalone executables
+3. **Multi-Platform Support**: Creates executables for:
+   - **macOS**: `testexe-final-macos`
+   - **Linux**: `testexe-final-linux` 
+   - **Windows**: `testexe-final-windows.exe`
+
+### Running the Executables
+
+Once built, you can run the executables from anywhere:
+
+```bash
+# On macOS
+./testexe-final-macos
+
+# On Linux
+./testexe-final-linux
+
+# On Windows
+./testexe-final-windows.exe
+```
+
+The executables will:
+- Start the backend server on port 3000
+- Serve the frontend on the same port
+- Work completely offline with no external dependencies
+
+### Executable Features
+
+- **Self-contained**: No need for Node.js, Bun, or any other runtime
+- **Portable**: Copy to any location and run
+- **Cross-platform**: Separate executables for each platform
+- **Optimized**: Frontend is built and bundled for production
+- **Obfuscated**: Backend code is compiled and optimized
+
+### Troubleshooting
+
+- **Permission denied**: Make sure the build script is executable (`chmod +x build.sh`)
+- **Build fails**: Ensure all dependencies are installed (`bun install` in all directories)
+- **Executable won't run**: Check that you're using the correct executable for your platform
+
 ## API Endpoints
 
 - `GET /` - Welcome message
