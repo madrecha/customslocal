@@ -1,0 +1,14 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Hono server backend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot index.js",
+    "start": "bun run index.js"
+  },
+  "dependencies": {
+    "hono": "^4.0.0"
+  }
+}

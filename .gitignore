@@ -1,0 +1,77 @@
+# Dependency directories
+node_modules/
+
+# Log fodler
+log/
+apilog/
+
+# vs code counter plugin
+.VSCodeCounter/
+
+# Log Files
+*.log
+
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Output of 'npm pack'
+*.tgz
+
+# dotenv environment variables file
+.env
+.env.test
+.env.backup
+
+# Firebase keys
+firebase.json
+
+# OS generated files #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Local Storage
+.dev/storage
+
+# File storage for hosting service
+files/
+
+# PDF Files
+*.pdf
+
+
+#
+*.traineddata
+
+# launch.json
+.vscode/launch.json
+
+.dev/db/as
+
+
+#vultr server bash
+vuenvupdate.sh
+
+#pem files
+*.pem
+
+#dist folder
+.dist/
+
+#deploy
+deploy/running_ips.txt
+deploy/blocked_ips.txt
+deploy/blockedtds_ips.txt
+deploy/runningtds_ips.txt
+deploy/eydeploy.sh
