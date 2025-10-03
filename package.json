@@ -7,12 +7,11 @@
     "backend"
   ],
   "scripts": {
-    "build": "bun run build:frontend && bun run build:backend",
+    "build": "bun run build:frontend",
     "build:frontend": "cd frontend && bun run build",
-    "build:backend": "cd backend && bun run build",
-    "start": "bun run server.js",
-    "dev": "bun run --hot server.js",
-    "build:exe": "bun run build:frontend && bun build server.js --compile --outfile=testexe"
+    "start": "cd backend && bun run start",
+    "dev": "cd backend && bun run dev",
+    "build:exe": "bun run build:frontend && bun build backend/index.js --compile --outfile=testexe"
   },
   "dependencies": {
     "hono": "^4.0.0",

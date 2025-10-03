@@ -68,7 +68,7 @@ const users = ref<User[]>([])
 const error = ref('')
 const counter = ref<number | null>(null)
 
-const API_BASE = 'http://localhost:3000'
+const API_BASE = 'http://192.168.10.18:3000'
 
 const checkHealth = async () => {
   loading.value = true
