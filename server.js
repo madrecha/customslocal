@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { serveStatic } from 'hono/serve-static'
 import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
+import { app as backendApp } from './backend/index.js'
 
 const app = new Hono()
 
@@ -20,23 +21,8 @@ app.use('*', async (c, next) => {
   await next()
 })
 
-// API routes
-app.get('/api/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() })
-})
-
-app.get('/api/users', (c) => {
-  const users = [
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
-  ]
-  return c.json(users)
-})
-
-app.post('/api/users', async (c) => {
-  const body = await c.req.json()
-  return c.json({ message: 'User created', user: body }, 201)
-})
+// Mount backend routes (includes API routes and counter functionality)
+app.route('/', backendApp)
 
 // Serve static files from frontend dist
 app.use('/assets/*', (c) => {
