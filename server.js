@@ -1,66 +1,87 @@
 import { Hono } from 'hono'
-import { join } from 'path'
 import { app as backendApp } from './backend/index.js'
-import { readFile, stat } from 'fs/promises'
 
 const app = new Hono()
 
 // --- Backend API ---
 app.route('/api', backendApp)
 
-const distPath = join(import.meta.dir, 'frontend/dist')
+// When compiled with `bun build --assets frontend/dist/**`,
+// Bun will embed files and serve them via Bun.file(<path>).
+// We reference assets using their original project paths.
+const ABS_INDEX = new URL('./frontend/dist/index.html', import.meta.url).pathname
+const ABS_FAVICON = new URL('./frontend/dist/favicon.ico', import.meta.url).pathname
+const INDEX_CANDIDATES = [
+  ABS_INDEX,
+  './frontend/dist/index.html',
+  'frontend/dist/index.html',
+  '/frontend/dist/index.html'
+]
+const FAVICON_CANDIDATES = [
+  ABS_FAVICON,
+  './frontend/dist/favicon.ico',
+  'frontend/dist/favicon.ico',
+  '/frontend/dist/favicon.ico'
+]
+
+async function resolveFirstExisting(paths) {
+  for (const p of paths) {
+    try {
+      if (await Bun.file(p).exists()) return p
+    } catch {}
+  }
+  return null
+}
+
+// Diagnostics to probe embedded asset paths in the compiled binary
+app.get('/__assets_probe', async (c) => {
+  const candidates = [
+    './frontend/dist/index.html',
+    'frontend/dist/index.html',
+    '/frontend/dist/index.html'
+  ]
+  const results = await Promise.all(
+    candidates.map(async (p) => ({ path: p, exists: await Bun.file(p).exists() }))
+  )
+  return c.json({ results })
+})
 
 // --- Serve static frontend ---
 app.get('/assets/*', async (c) => {
   const assetPath = c.req.path.replace('/assets/', '')
-  const path = join(distPath, 'assets', assetPath)
-  try {
-    const content = await readFile(path)
-    const ext = path.split('.').pop()
-    const mimeTypes = {
-      'js': 'application/javascript',
-      'css': 'text/css',
-      'html': 'text/html',
-      'ico': 'image/x-icon',
-      'png': 'image/png',
-      'jpg': 'image/jpeg',
-      'svg': 'image/svg+xml'
-    }
-    const mimeType = mimeTypes[ext] || 'application/octet-stream'
-    return new Response(content, {
-      headers: {
-        'Content-Type': mimeType
-      }
-    })
-  } catch (error) {
-    return c.text('File not found', 404)
+  const absAsset = new URL(`./frontend/dist/assets/${assetPath}`, import.meta.url).pathname
+  const candidates = [
+    absAsset,
+    `./frontend/dist/assets/${assetPath}`,
+    `frontend/dist/assets/${assetPath}`,
+    `/frontend/dist/assets/${assetPath}`
+  ]
+  const p = await resolveFirstExisting(candidates)
+  if (!p) return c.text('File not found', 404)
+  const ext = assetPath.split('.').pop()
+  const mimeTypes = {
+    'js': 'application/javascript',
+    'css': 'text/css',
+    'html': 'text/html',
+    'ico': 'image/x-icon',
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'svg': 'image/svg+xml'
   }
+  const mimeType = mimeTypes[ext] || 'application/octet-stream'
+  return new Response(Bun.file(p), { headers: { 'Content-Type': mimeType } })
 })
 
 app.get('/favicon.ico', async (c) => {
-  try {
-    const content = await readFile(join(distPath, 'favicon.ico'))
-    return new Response(content, {
-      headers: {
-        'Content-Type': 'image/x-icon'
-      }
-    })
-  } catch (error) {
-    return c.text('Favicon not found', 404)
-  }
+  const p = await resolveFirstExisting(FAVICON_CANDIDATES)
+  if (!p) return c.text('Favicon not found', 404)
+  return new Response(Bun.file(p), { headers: { 'Content-Type': 'image/x-icon' } })
 })
 
 app.get('/*', async (c) => {
-  try {
-    const content = await readFile(join(distPath, 'index.html'))
-    return new Response(content, {
-      headers: {
-        'Content-Type': 'text/html'
-      }
-    })
-  } catch (error) {
-    return c.text('Index file not found', 404)
-  }
+  const p = await resolveFirstExisting(INDEX_CANDIDATES)
+  if (!p) return c.text('Index file not found', 404)
+  return new Response(Bun.file(p), { headers: { 'Content-Type': 'text/html' } })
 })
 
 // --- Server ---

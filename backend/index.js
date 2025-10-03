@@ -3,7 +3,8 @@ import { Database } from "bun:sqlite";
 
 const app = new Hono()
 
-const db = new Database('database.db')
+// Use in-memory DB to avoid external file when compiled to a single binary
+const db = new Database(':memory:')
 
 db.run('CREATE TABLE IF NOT EXISTS counter (counter INTEGER DEFAULT 0)')
 
@@ -25,6 +26,19 @@ app.use('*', async (c, next) => {
 // API routes
 app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// Diagnostics: probe embedded asset paths (served by root app)
+app.get('/assets_probe', async (c) => {
+  const candidates = [
+    './frontend/dist/index.html',
+    'frontend/dist/index.html',
+    '/frontend/dist/index.html'
+  ]
+  const results = await Promise.all(
+    candidates.map(async (p) => ({ path: p, exists: await Bun.file(p).exists() }))
+  )
+  return c.json({ results })
 })
 
 app.get('/users', (c) => {

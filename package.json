@@ -12,7 +12,7 @@
     "build:backend": "cd backend && bun run build",
     "start": "bun run server.js",
     "dev": "bun run --hot server.js",
-    "build:exe": "bun run build:frontend && bun build server.js --compile --outfile=testexe"
+    "build:exe": "bun run build:frontend && bun build server.js --compile --outfile=testexe --assets=./frontend/dist --assets=./frontend/dist/**"
   },
   "dependencies": {
     "hono": "^4.0.0",
