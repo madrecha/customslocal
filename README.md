@@ -168,3 +168,6 @@ The executables will:
 - `GET /api/health` - Health check
 - `GET /api/users` - Get all users
 - `POST /api/users` - Create a new user
+
+
+<!-- pkill -f testexe-final-macos || true; sleep 1; ./testexe-final-macos & sleep 1; echo PROBE1: && curl -s http://localhost:3000/__assets_probe || true; -->
