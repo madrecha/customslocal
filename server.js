@@ -1,97 +1,70 @@
 import { Hono } from 'hono'
-import { serveStatic } from 'hono/serve-static'
-import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { app as backendApp } from './backend/index.js'
+import { readFile, stat } from 'fs/promises'
 
 const app = new Hono()
 
-// CORS middleware
-app.use('*', async (c, next) => {
-  c.header('Access-Control-Allow-Origin', '*')
-  c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
-  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin')
-  c.header('Access-Control-Allow-Credentials', 'true')
-  c.header('Access-Control-Max-Age', '86400')
-  
-  if (c.req.method === 'OPTIONS') {
-    return c.text('', 200)
-  }
-  
-  await next()
-})
+// --- Backend API ---
+app.route('/api', backendApp)
 
-// Mount backend routes (includes API routes and counter functionality)
-app.route('/', backendApp)
+const distPath = join(import.meta.dir, 'frontend/dist')
 
-// Serve static files from frontend dist
-app.use('/assets/*', (c) => {
+// --- Serve static frontend ---
+app.get('/assets/*', async (c) => {
   const assetPath = c.req.path.replace('/assets/', '')
-  // Try multiple possible paths for frontend files
-  const possiblePaths = [
-    join('./frontend/dist/assets', assetPath),
-    join('./dist/assets', assetPath),
-    join('./assets', assetPath)
-  ]
-  
-  for (const fullPath of possiblePaths) {
-    if (existsSync(fullPath)) {
-      const content = readFileSync(fullPath)
-      const ext = assetPath.split('.').pop()
-      const mimeTypes = {
-        'js': 'application/javascript',
-        'css': 'text/css',
-        'png': 'image/png',
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'gif': 'image/gif',
-        'svg': 'image/svg+xml',
-        'ico': 'image/x-icon'
+  const path = join(distPath, 'assets', assetPath)
+  try {
+    const content = await readFile(path)
+    const ext = path.split('.').pop()
+    const mimeTypes = {
+      'js': 'application/javascript',
+      'css': 'text/css',
+      'html': 'text/html',
+      'ico': 'image/x-icon',
+      'png': 'image/png',
+      'jpg': 'image/jpeg',
+      'svg': 'image/svg+xml'
+    }
+    const mimeType = mimeTypes[ext] || 'application/octet-stream'
+    return new Response(content, {
+      headers: {
+        'Content-Type': mimeType
       }
-      const contentType = mimeTypes[ext] || 'application/octet-stream'
-      return c.body(content, 200, { 'Content-Type': contentType })
-    }
+    })
+  } catch (error) {
+    return c.text('File not found', 404)
   }
-  return c.text('Asset not found', 404)
 })
 
-app.get('/favicon.ico', (c) => {
-  // Try multiple possible paths for favicon
-  const possiblePaths = [
-    join('./frontend/dist', 'favicon.ico'),
-    join('./dist', 'favicon.ico'),
-    join('./', 'favicon.ico')
-  ]
-  
-  for (const faviconPath of possiblePaths) {
-    if (existsSync(faviconPath)) {
-      const favicon = readFileSync(faviconPath)
-      return c.body(favicon, 200, { 'Content-Type': 'image/x-icon' })
-    }
+app.get('/favicon.ico', async (c) => {
+  try {
+    const content = await readFile(join(distPath, 'favicon.ico'))
+    return new Response(content, {
+      headers: {
+        'Content-Type': 'image/x-icon'
+      }
+    })
+  } catch (error) {
+    return c.text('Favicon not found', 404)
   }
-  return c.text('Not found', 404)
 })
 
-// Serve index.html for all other routes (SPA routing)
-app.get('/*', (c) => {
-  // Try multiple possible paths for index.html
-  const possiblePaths = [
-    join('./frontend/dist', 'index.html'),
-    join('./dist', 'index.html'),
-    join('./', 'index.html')
-  ]
-  
-  for (const indexPath of possiblePaths) {
-    if (existsSync(indexPath)) {
-      const html = readFileSync(indexPath, 'utf-8')
-      return c.html(html)
-    }
+app.get('/*', async (c) => {
+  try {
+    const content = await readFile(join(distPath, 'index.html'))
+    return new Response(content, {
+      headers: {
+        'Content-Type': 'text/html'
+      }
+    })
+  } catch (error) {
+    return c.text('Index file not found', 404)
   }
-  return c.text('Frontend not found', 404)
 })
 
+// --- Server ---
 const port = process.env.PORT || 3000
-
 console.log(`Server is running on http://localhost:${port}`)
 
 export default {

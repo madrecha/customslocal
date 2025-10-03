@@ -23,11 +23,11 @@ app.use('*', async (c, next) => {
 })
 
 // API routes
-app.get('/api/health', (c) => {
+app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.get('/api/users', (c) => {
+app.get('/users', (c) => {
   const users = [
     { id: 1, name: 'John Doe', email: 'john@example.com' },
     { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
@@ -35,13 +35,13 @@ app.get('/api/users', (c) => {
   return c.json(users)
 })
 
-app.post('/api/users', async (c) => {
+app.post('/users', async (c) => {
   const body = await c.req.json()
   return c.json({ message: 'User created', user: body }, 201)
 })
 
 // increment the counter
-app.post('/api/counter', (c) => {
+app.post('/counter', (c) => {
   // Try to get the current counter
   let counterRow = db.prepare('SELECT counter FROM counter').get();
   let newCounter;
@@ -58,7 +58,7 @@ app.post('/api/counter', (c) => {
 })
 
 // get the counter
-app.get('/api/counter', (c) => {
+app.get('/counter', (c) => {
   const counter = db.prepare('SELECT counter FROM counter').get()
   return c.json({ counter: counter?.counter ?? 0, message: 'Counter fetched' })
 })
