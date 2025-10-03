@@ -80,3 +80,6 @@ deploy/eydeploy.sh
 testexe-final-linux
 testexe-final-macos
 testexe-final-windows.exe
+
+# database
+database.db

@@ -1,4 +1,9 @@
 import { Hono } from 'hono'
+import { Database } from "bun:sqlite";
+
+const db = new Database('database.db')
+
+db.run('CREATE TABLE IF NOT EXISTS counter (counter INTEGER DEFAULT 0)')
 
 const app = new Hono()
 
@@ -30,9 +35,27 @@ app.get('/api/users', (c) => {
   return c.json(users)
 })
 
-app.post('/api/users', async (c) => {
-  const body = await c.req.json()
-  return c.json({ message: 'User created', user: body }, 201)
+// increment the counter
+app.post('/api/counter', (c) => {
+  // Try to get the current counter
+  let counterRow = db.prepare('SELECT counter FROM counter').get();
+  let newCounter;
+  if (counterRow) {
+    // If exists, increment and update
+    newCounter = counterRow.counter + 1;
+    db.prepare('UPDATE counter SET counter = ?').run(newCounter);
+  } else {
+    // If not exists, insert with value 1
+    newCounter = 1;
+    db.prepare('INSERT INTO counter (counter) VALUES (?)').run(newCounter);
+  }
+  return c.json({ counter: newCounter, message: 'Counter incremented' });
+})
+
+// get the counter
+app.get('/api/counter', (c) => {
+  const counter = db.prepare('SELECT counter FROM counter').get()
+  return c.json({ counter: counter?.counter ?? 0, message: 'Counter fetched' })
 })
 
 const port = process.env.PORT || 3000

@@ -26,6 +26,21 @@
       </div>
     </div>
 
+    <div class="counter-section">
+      <h3>Counter</h3>
+      <div class="counter-actions">
+        <button @click="getCounter" :disabled="loading">
+          {{ loading ? 'Loading...' : 'Get Counter' }}
+        </button>
+        <button @click="incrementCounter" :disabled="loading" style="margin-left: 10px;">
+          {{ loading ? 'Working...' : 'Increment Counter' }}
+        </button>
+      </div>
+      <div v-if="counter !== null" class="status-message">
+        <p><strong>Current Counter:</strong> {{ counter }}</p>
+      </div>
+    </div>
+
     <div class="error-section" v-if="error">
       <h3>Error</h3>
       <p class="error-message">{{ error }}</p>
@@ -51,6 +66,7 @@ const loading = ref(false)
 const healthStatus = ref<HealthStatus | null>(null)
 const users = ref<User[]>([])
 const error = ref('')
+const counter = ref<number | null>(null)
 
 const API_BASE = 'http://localhost:3000'
 
@@ -83,6 +99,36 @@ const fetchUsers = async () => {
     loading.value = false
   }
 }
+
+const getCounter = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const response = await fetch(`${API_BASE}/api/counter`)
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+    const data = await response.json()
+    counter.value = typeof data.counter === 'number' ? data.counter : null
+  } catch (err) {
+    error.value = `Failed to get counter: ${err instanceof Error ? err.message : 'Unknown error'}`
+  } finally {
+    loading.value = false
+  }
+}
+
+const incrementCounter = async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const response = await fetch(`${API_BASE}/api/counter`, { method: 'POST' })
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+    const data = await response.json()
+    counter.value = typeof data.counter === 'number' ? data.counter : null
+  } catch (err) {
+    error.value = `Failed to increment counter: ${err instanceof Error ? err.message : 'Unknown error'}`
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -93,11 +139,17 @@ const fetchUsers = async () => {
 }
 
 .status-section,
-.users-section {
+.users-section,
+.counter-section {
   margin-bottom: 30px;
   padding: 20px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
+}
+
+.counter-actions {
+  display: flex;
+  align-items: center;
 }
 
 button {
