@@ -9,26 +9,28 @@ app.route('/api', backendApp)
 // When compiled with `bun build --assets frontend/dist/**`,
 // Bun will embed files and serve them via Bun.file(<path>).
 // We reference assets using their original project paths.
-const ABS_INDEX = new URL('./frontend/dist/index.html', import.meta.url).pathname
-const ABS_FAVICON = new URL('./frontend/dist/favicon.ico', import.meta.url).pathname
 const INDEX_CANDIDATES = [
-  ABS_INDEX,
   './frontend/dist/index.html',
   'frontend/dist/index.html',
-  '/frontend/dist/index.html'
+  '/frontend/dist/index.html',
+  './dist/index.html',
+  'dist/index.html',
+  '/dist/index.html'
 ]
 const FAVICON_CANDIDATES = [
-  ABS_FAVICON,
   './frontend/dist/favicon.ico',
   'frontend/dist/favicon.ico',
-  '/frontend/dist/favicon.ico'
+  '/frontend/dist/favicon.ico',
+  './dist/favicon.ico',
+  'dist/favicon.ico',
+  '/dist/favicon.ico'
 ]
 
 async function resolveFirstExisting(paths) {
   for (const p of paths) {
     try {
       if (await Bun.file(p).exists()) return p
-    } catch {}
+    } catch { }
   }
   return null
 }
@@ -38,7 +40,10 @@ app.get('/__assets_probe', async (c) => {
   const candidates = [
     './frontend/dist/index.html',
     'frontend/dist/index.html',
-    '/frontend/dist/index.html'
+    '/frontend/dist/index.html',
+    './dist/index.html',
+    'dist/index.html',
+    '/dist/index.html'
   ]
   const results = await Promise.all(
     candidates.map(async (p) => ({ path: p, exists: await Bun.file(p).exists() }))
@@ -49,12 +54,13 @@ app.get('/__assets_probe', async (c) => {
 // --- Serve static frontend ---
 app.get('/assets/*', async (c) => {
   const assetPath = c.req.path.replace('/assets/', '')
-  const absAsset = new URL(`./frontend/dist/assets/${assetPath}`, import.meta.url).pathname
   const candidates = [
-    absAsset,
     `./frontend/dist/assets/${assetPath}`,
     `frontend/dist/assets/${assetPath}`,
-    `/frontend/dist/assets/${assetPath}`
+    `/frontend/dist/assets/${assetPath}`,
+    `./dist/assets/${assetPath}`,
+    `dist/assets/${assetPath}`,
+    `/dist/assets/${assetPath}`
   ]
   const p = await resolveFirstExisting(candidates)
   if (!p) return c.text('File not found', 404)

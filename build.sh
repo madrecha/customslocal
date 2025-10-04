@@ -8,13 +8,13 @@ cd frontend && bun run build && cd ..
 
 # Build executables
 echo "🍎 Building macOS executable..."
-bun build server.js --compile --outfile=testexe-final-macos --target=bun-mac --assets=./frontend/dist --assets=./frontend/dist/**
+bun build server.js --compile --outfile=testexe-final-macos --target=bun-mac --assets="./frontend/dist/**"
 
 echo "🐧 Building Linux executable..."
-bun build server.js --compile --outfile=testexe-final-linux --target=bun-linux --assets=./frontend/dist --assets=./frontend/dist/**
+bun build server.js --compile --outfile=testexe-final-linux --target=bun-linux --assets="./frontend/dist/**"
 
 echo "🪟 Building Windows executable..."
-bun build server.js --compile --outfile=testexe-final-windows.exe --target=bun-windows --assets=./frontend/dist --assets=./frontend/dist/**
+bun build server.js --compile --outfile=testexe-final-windows.exe --target=bun-windows --assets="./frontend/dist/**"
 
 echo "✅ All executables built successfully!"
 echo ""
